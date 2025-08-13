@@ -109,19 +109,19 @@ if ($anyServiceStopped) {
     Write-LogOutput "`nACTION REQUIRED: Some services are not running" "Red"
     $exitCode = 1
 } else {
-    Write-LogOutput "`nAll services are running correctly" "Green"
+    # Flash the pass message
+    for ($i = 0; $i -lt 3; $i++) {
+        Write-Host "`nCompliance checks pass.`nAll services are running correctly!" -ForegroundColor Green
+        Start-Sleep -Milliseconds 500
+        Clear-Host
+        Start-Sleep -Milliseconds 500
+    }
+    Write-LogOutput "`nCompliance checks pass.`nAll services are running correctly!" "Green"
     $exitCode = 0
 }
 
-# Open log file unless NoGUI switch is used
-if (-not $NoGUI -and (Test-Path $LogPath)) {
-    try {
-        Start-Process notepad.exe $LogPath
-    } catch {
-        Write-Warning "Could not open log file in Notepad: $_"
-        Write-Host "Log file location: $LogPath"
-    }
-}
+# Display log file location
+Write-Host "Log file saved: $LogPath" -ForegroundColor Cyan
 
 # Keep console open
 Read-Host "`nPress Enter to continue"
