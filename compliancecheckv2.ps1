@@ -109,13 +109,6 @@ if ($anyServiceStopped) {
     Write-LogOutput "`nACTION REQUIRED: Some services are not running" "Red"
     $exitCode = 1
 } else {
-    # Flash the pass message
-    for ($i = 0; $i -lt 3; $i++) {
-        Write-Host "`nCompliance checks pass.`nAll services are running correctly!" -ForegroundColor Green
-        Start-Sleep -Milliseconds 500
-        Clear-Host
-        Start-Sleep -Milliseconds 500
-    }
     Write-LogOutput "`nCompliance checks pass.`nAll services are running correctly!" "Green"
     $exitCode = 0
 }
@@ -123,6 +116,5 @@ if ($anyServiceStopped) {
 # Display log file location
 Write-Host "Log file saved: $LogPath" -ForegroundColor Cyan
 
-# Keep console open
+# Keep console open - return to prompt instead of exiting
 Read-Host "`nPress Enter to continue"
-exit $exitCode
