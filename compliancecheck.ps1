@@ -47,4 +47,4 @@ if ($anyServiceStopped) {
 # Write the summary to a temp file and open it in Notepad
 $tempFile = [System.IO.Path]::GetTempFileName() + ".txt"
 [System.IO.File]::WriteAllText($tempFile, $log)
-Start-Process notepad.exe $tempFile
+# Start-Process notepad.exe $tempFile
