@@ -62,10 +62,10 @@ $results | Format-Table -AutoSize | Out-String | Write-Host
 # Final summary
 if ($anyServiceStopped) {
     Write-LogOutput "`nACTION REQUIRED: Some services are not running" "Red"
-    exit 1
+    $exitCode = 1
 } else {
     Write-LogOutput "`nAll services are running correctly" "Green"
-    exit 0
+    $exitCode = 0
 }
 
 # Open log file unless NoGUI switch is used
@@ -77,3 +77,8 @@ if (-not $NoGUI -and (Test-Path $LogPath)) {
         Write-Host "Log file location: $LogPath"
     }
 }
+
+# Keep console open
+Write-Host "`nPress any key to continue..."
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+exit $exitCode
