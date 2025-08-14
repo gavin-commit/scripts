@@ -2,47 +2,30 @@
 
 # Claude Code Setup Script
 # Automates environment configuration for LiteLLM and certificate handling
-# Gavin Wilby. gavin.wilby@derivco.co.im
 
 set -e
 
-echo "=== Claude Code Configuration Setup ==="
-echo
+osascript -e 'display notification "Starting Claude Code setup..." with title "Claude Code Setup"'
 
-# Step 1: Get configuration from user
-read -p "Enter your API key: " -s API_KEY
-echo
-echo
+# Configuration - hardcoded for JAMF deployment
+LITELLM_BASE_URL="https://litellm.aitooling.mgsops.net"
+OTEL_ENDPOINT="http://10.75.11.46:4317"
+
+# Step 1: Get API key from user
+API_KEY=$(osascript -e 'Tell application "System Events" to display dialog "Enter your API key for Claude Code setup:" default answer "" with hidden answer with title "Claude Code Setup"' -e 'text returned of result' 2>/dev/null)
 
 if [ -z "$API_KEY" ]; then
-    echo "Error: API key cannot be empty"
-    exit 1
-fi
-
-read -p "Enter the Anthropic base URL: " LITELLM_BASE_URL
-echo
-
-if [ -z "$LITELLM_BASE_URL" ]; then
-    echo "Error: LiteLLM base URL cannot be empty"
-    exit 1
-fi
-
-read -p "Enter the OTEL endpoint IP Address: " OTEL_ENDPOINT
-echo
-
-if [ -z "$OTEL_ENDPOINT" ]; then
-    echo "Error: OTEL endpoint cannot be empty"
+    osascript -e 'display dialog "Error: API key cannot be empty" with title "Claude Code Setup" buttons {"OK"} default button "OK"'
     exit 1
 fi
 
 # Step 2: Export system certificates
-echo "Step 2: Exporting system certificates..."
+osascript -e 'display notification "Exporting system certificates..." with title "Claude Code Setup"'
 security find-certificate -a -p > ~/node_ca_bundle.pem
-echo "✓ Certificates exported to ~/node_ca_bundle.pem"
-echo
+osascript -e 'display notification "✓ Certificates exported" with title "Claude Code Setup"'
 
 # Step 3: Set up environment variables for current session
-echo "Step 3: Setting up environment variables..."
+osascript -e 'display notification "Setting up environment variables..." with title "Claude Code Setup"'
 export ANTHROPIC_BASE_URL="$LITELLM_BASE_URL"
 export ANTHROPIC_AUTH_TOKEN="$API_KEY"
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
@@ -52,11 +35,10 @@ export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
 export OTEL_EXPORTER_OTLP_ENDPOINT="$OTEL_ENDPOINT"
 export OTEL_RESOURCE_ATTRIBUTES=host.name=$HOSTNAME,user.id=$USER
 export NODE_EXTRA_CA_CERTS="$HOME/node_ca_bundle.pem"
-echo "✓ Environment variables set for current session"
-echo
+osascript -e 'display notification "✓ Environment variables set" with title "Claude Code Setup"'
 
 # Step 4: Test the configuration
-echo "Step 4: Testing HTTPS connection..."
+osascript -e 'display notification "Testing HTTPS connection..." with title "Claude Code Setup"'
 node -e "
 console.log('Testing HTTPS connection...');
 const https = require('https');
@@ -71,7 +53,7 @@ https.get('$LITELLM_BASE_URL', (res) => {
 echo
 
 # Step 5: Make configuration permanent
-echo "Step 5: Making configuration permanent..."
+osascript -e 'display notification "Making configuration permanent..." with title "Claude Code Setup"'
 
 # Detect shell
 if [[ $SHELL == *"zsh"* ]]; then
@@ -79,11 +61,11 @@ if [[ $SHELL == *"zsh"* ]]; then
 elif [[ $SHELL == *"bash"* ]]; then
     SHELL_RC="$HOME/.bashrc"
 else
-    echo "Warning: Unknown shell. Using .zshrc as default."
+    osascript -e 'display notification "Warning: Unknown shell. Using .zshrc as default." with title "Claude Code Setup"'
     SHELL_RC="$HOME/.zshrc"
 fi
 
-echo "Adding configuration to $SHELL_RC..."
+osascript -e 'display notification "Adding configuration to shell profile..." with title "Claude Code Setup"'
 
 # Add configuration to shell profile
 cat >> "$SHELL_RC" << EOF
@@ -100,14 +82,12 @@ export OTEL_EXPORTER_OTLP_ENDPOINT="$OTEL_ENDPOINT"
 export OTEL_RESOURCE_ATTRIBUTES=host.name=\$HOSTNAME,user.id=\$USER
 EOF
 
-echo "✓ Configuration added to $SHELL_RC"
-echo
+osascript -e 'display dialog "Setup Complete!
 
-echo "=== Setup Complete! ==="
-echo "Configuration has been saved to your shell profile."
-echo "To use in new terminal sessions, either:"
-echo "1. Open a new terminal window/tab, or"
-echo "2. Run: source $SHELL_RC"
-echo
-echo "Your API key and certificates are now configured for Claude Code."
-echo "Reboot to complete this installation"
+Configuration has been saved to your shell profile.
+
+To use in new terminal sessions:
+1. Open a new terminal window/tab, or
+2. Run: source '$SHELL_RC'
+
+Your API key and certificates are now configured for Claude Code." with title "Claude Code Setup" buttons {"OK"} default button "OK"'
