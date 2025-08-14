@@ -39,17 +39,12 @@ osascript -e 'display notification "✓ Environment variables set" with title "C
 
 # Step 4: Test the configuration
 osascript -e 'display notification "Testing HTTPS connection..." with title "Claude Code Setup"'
-node -e "
-console.log('Testing HTTPS connection...');
-const https = require('https');
-https.get('$LITELLM_BASE_URL', (res) => {
-  console.log('Success! Status:', res.statusCode);
-  process.exit(0);
-}).on('error', (err) => {
-  console.error('Error:', err.message);
-  process.exit(1);
-});
-"
+# Test using curl instead of node
+if curl -s --max-time 10 "$LITELLM_BASE_URL" > /dev/null 2>&1; then
+  osascript -e 'display notification "✓ Connection test successful" with title "Claude Code Setup"'
+else
+  osascript -e 'display notification "⚠️ Connection test failed (continuing anyway)" with title "Claude Code Setup"'
+fi
 echo
 
 # Step 5: Make configuration permanent
