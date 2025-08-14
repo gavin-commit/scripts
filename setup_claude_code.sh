@@ -2,13 +2,14 @@
 
 # Claude Code Setup Script
 # Automates environment configuration for LiteLLM and certificate handling
+# Gavin Wilby. gavin.wilby@derivco.co.im
 
 set -e
 
 echo "=== Claude Code Configuration Setup ==="
 echo
 
-# Step 1: Get API Key from user
+# Step 1: Get configuration from user
 read -p "Enter your API key: " -s API_KEY
 echo
 echo
@@ -18,32 +19,48 @@ if [ -z "$API_KEY" ]; then
     exit 1
 fi
 
+read -p "Enter the Anthropic base URL: " LITELLM_BASE_URL
+echo
+
+if [ -z "$LITELLM_BASE_URL" ]; then
+    echo "Error: LiteLLM base URL cannot be empty"
+    exit 1
+fi
+
+read -p "Enter the OTEL endpoint IP Address: " OTEL_ENDPOINT
+echo
+
+if [ -z "$OTEL_ENDPOINT" ]; then
+    echo "Error: OTEL endpoint cannot be empty"
+    exit 1
+fi
+
 # Step 2: Export system certificates
-echo "Step 1: Exporting system certificates..."
+echo "Step 2: Exporting system certificates..."
 security find-certificate -a -p > ~/node_ca_bundle.pem
 echo "✓ Certificates exported to ~/node_ca_bundle.pem"
 echo
 
 # Step 3: Set up environment variables for current session
-echo "Step 2: Setting up environment variables..."
-export ANTHROPIC_BASE_URL=https://litellm.aitooling.mgsops.net
+echo "Step 3: Setting up environment variables..."
+export ANTHROPIC_BASE_URL="$LITELLM_BASE_URL"
 export ANTHROPIC_AUTH_TOKEN="$API_KEY"
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
 export OTEL_METRICS_EXPORTER=otlp
 export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://10.75.11.46:4317
+export OTEL_EXPORTER_OTLP_ENDPOINT="$OTEL_ENDPOINT"
 export OTEL_RESOURCE_ATTRIBUTES=host.name=$HOSTNAME,user.id=$USER
 export NODE_EXTRA_CA_CERTS="$HOME/node_ca_bundle.pem"
 echo "✓ Environment variables set for current session"
 echo
 
 # Step 4: Test the configuration
-echo "Step 3: Testing HTTPS connection..."
+echo "Step 4: Testing HTTPS connection..."
 node -e "
 console.log('Testing HTTPS connection...');
 const https = require('https');
-https.get('https://litellm.aitooling.mgsops.net', (res) => {
+https.get('$LITELLM_BASE_URL', (res) => {
   console.log('Success! Status:', res.statusCode);
   process.exit(0);
 }).on('error', (err) => {
@@ -54,7 +71,7 @@ https.get('https://litellm.aitooling.mgsops.net', (res) => {
 echo
 
 # Step 5: Make configuration permanent
-echo "Step 4: Making configuration permanent..."
+echo "Step 5: Making configuration permanent..."
 
 # Detect shell
 if [[ $SHELL == *"zsh"* ]]; then
@@ -72,14 +89,14 @@ echo "Adding configuration to $SHELL_RC..."
 cat >> "$SHELL_RC" << EOF
 
 # Claude Code Configuration (added by setup script)
-export ANTHROPIC_BASE_URL=https://litellm.aitooling.mgsops.net
+export ANTHROPIC_BASE_URL="$LITELLM_BASE_URL"
 export ANTHROPIC_AUTH_TOKEN="$API_KEY"
 export NODE_EXTRA_CA_CERTS="\$HOME/node_ca_bundle.pem"
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
 export OTEL_METRICS_EXPORTER=otlp
 export OTEL_LOGS_EXPORTER=otlp
 export OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-export OTEL_EXPORTER_OTLP_ENDPOINT=http://10.75.11.46:4317
+export OTEL_EXPORTER_OTLP_ENDPOINT="$OTEL_ENDPOINT"
 export OTEL_RESOURCE_ATTRIBUTES=host.name=\$HOSTNAME,user.id=\$USER
 EOF
 
@@ -93,4 +110,4 @@ echo "1. Open a new terminal window/tab, or"
 echo "2. Run: source $SHELL_RC"
 echo
 echo "Your API key and certificates are now configured for Claude Code."
-echo "Reboot your Mac to complete this installation."
+echo "Reboot to complete this installation"
