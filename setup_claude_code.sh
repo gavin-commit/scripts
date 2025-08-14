@@ -90,4 +90,6 @@ To use in new terminal sessions:
 1. Open a new terminal window/tab, or
 2. Run: source '$SHELL_RC'
 
-Your API key and certificates are now configured for Claude Code." with title "Claude Code Setup" buttons {"OK"} default button "OK"'
+Your API key and certificates are now configured for Claude Code.
+
+v 0.1 Gavin Wilby. gavin.wilby@derivco.co.im" with title "Claude Code Setup" buttons {"OK"} default button "OK"'
