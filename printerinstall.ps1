@@ -13,18 +13,15 @@
           $networkAddress = $network.Split('/')[0]
           $prefixLength = [int]$network.Split('/')[1]
 
-          # Convert to network object for comparison
           $networkObj = [ipaddress]$networkAddress
           $currentIPObj = [ipaddress]$currentIP
 
-          # Calculate network mask
           $mask = [ipaddress]([math]::pow(2, 32) - [math]::pow(2, 32 - $prefixLength))
 
-          # Check if current IP is in the allowed network
           if (($currentIPObj.Address -band $mask.Address) -eq ($networkObj.Address -band
   $mask.Address)) {
               $networkFound = $true
-              Write-Host "Computer is on allowed network: $network (Current IP: $currentIP)"
+              Write-Output "Computer is on allowed network: $network (Current IP: $currentIP)"
               break
           }
       }
@@ -34,20 +31,24 @@
 
   if ($networkFound) {
       try {
-          Write-Host "Installing printer: \\iod179\IOM Printer"
+          Write-Output "Installing printer: \\iod179\IOM Printer"
 
-          # Install printer
-          rundll32 printui.dll,PrintUIEntry /in /n "\\iod179\IOM Printer"
-          Start-Sleep -Seconds 5
+          # Modern approach - Add network printer
+          Add-Printer -ConnectionName "\\iod179\IOM Printer"
 
-          # Set as default
-          rundll32 printui.dll,PrintUIEntry /y /n "\\iod179\IOM Printer"
-
-          Write-Host "Printer installed and set as default successfully"
+          # Set as default printer
+          $printer = Get-CimInstance -ClassName Win32_Printer | Where-Object {$_.Name -eq
+  "\\iod179\IOM Printer"}
+          if ($printer) {
+              Invoke-CimMethod -InputObject $printer -MethodName SetDefaultPrinter
+              Write-Output "Printer installed and set as default successfully"
+          }
       }
       catch {
           Write-Error "Failed to install printer: $($_.Exception.Message)"
+          exit 1
       }
   } else {
-      Write-Host "Computer is not on an allowed network. Skipping printer installation."
+      Write-Output "Computer is not on an allowed network. Skipping printer installation."
+      exit 0
   }
