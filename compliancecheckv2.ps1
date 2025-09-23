@@ -1,4 +1,4 @@
-#Run it with: https://raw.githubusercontent.com/javier-derivco/scripts/refs/heads/main/compliancecheckv2.ps1
+#Run it with: irm https://raw.githubusercontent.com/javier-derivco/scripts/refs/heads/main/compliancecheckv2.ps1 | iex
 #Requires -Version 5.1
 [CmdletBinding()]
 param(
