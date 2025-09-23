@@ -1,3 +1,4 @@
+#Run it with: https://raw.githubusercontent.com/javier-derivco/scripts/refs/heads/main/compliancecheckv2.ps1
 #Requires -Version 5.1
 [CmdletBinding()]
 param(
